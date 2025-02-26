@@ -16,8 +16,8 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <plurals name="play_recordings">
-        <item quantity="one">Reproduzir a gravação</item>
-        <item quantity="other">Reproduzir as gravações</item>
+        <item quantity="one">پخش فایل ضبط شده</item>
+        <item quantity="other">پخش فایهای ضبط شده</item>
     </plurals>
-    <string name="call_playback_no_app_found_toast">Não foi encontrado nenhum app para reproduzir a gravação selecionada.</string>
+    <string name="call_playback_no_app_found_toast">هیچ برنامه ای برای پخش فایل ضبط شده موجود نیست.</string>
 </resources>

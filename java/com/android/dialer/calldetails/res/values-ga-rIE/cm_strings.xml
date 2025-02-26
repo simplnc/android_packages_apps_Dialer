@@ -16,8 +16,11 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <plurals name="play_recordings">
-        <item quantity="one">Reproduzir a gravação</item>
-        <item quantity="other">Reproduzir as gravações</item>
+        <item quantity="one">Seinn taifeadadh</item>
+        <item quantity="two">Seinn taifeadtaí</item>
+        <item quantity="few">Seinn taifeadtaí</item>
+        <item quantity="many">Seinn taifeadtaí</item>
+        <item quantity="other">Seinn taifeadtaí</item>
     </plurals>
-    <string name="call_playback_no_app_found_toast">Não foi encontrado nenhum app para reproduzir a gravação selecionada.</string>
+    <string name="call_playback_no_app_found_toast">Níorbh fhéidir aon aip a aimsiú chun an taifeadadh roghnaithe a athsheinm.</string>
 </resources>
