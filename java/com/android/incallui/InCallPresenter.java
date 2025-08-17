@@ -656,6 +656,11 @@ public class InCallPresenter implements CallList.Listener, AudioModeProvider.Aud
       onForegroundCallChanged(primary);
     }
 
+    // Auto-start call recording when conditions are met
+    maybeAutoStartCallRecording(primary);
+    // Show/Hide bubble overlay depending on active call
+    handleRecordingBubble(primary);
+
     // notify listeners of new state
     for (InCallStateListener listener : listeners) {
       LogUtil.d(
@@ -1830,4 +1835,68 @@ public class InCallPresenter implements CallList.Listener, AudioModeProvider.Aud
   }
 
   private final Set<InCallUiLock> inCallUiLocks = new ArraySet<>();
+
+  private void maybeAutoStartCallRecording(DialerCall call) {
+    try {
+      if (call == null) return;
+      if (call.isVideoCall()) return;
+      if (call.getState() != DialerCallState.ACTIVE) return;
+
+      CallRecorder recorder = CallRecorder.getInstance();
+      if (!recorder.isEnabled()) return;
+      if (!recorder.canRecordInCurrentCountry()) return;
+      if (!recorder.isAutoRecordEnabled()) return;
+
+      // Per-SIM gate when possible
+      try {
+        if (call.getAccountHandle() != null) {
+          android.telephony.TelephonyManager tm = context.getSystemService(android.telephony.TelephonyManager.class);
+          int subId = android.telephony.SubscriptionManager.getSubscriptionId(call.getAccountHandle());
+          if (subId != android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+            if (!recorder.isAutoRecordEnabledForSubId(subId)) return;
+          }
+        }
+      } catch (Throwable ignored) {}
+
+      // Per-contact exclusion gate
+      try {
+        java.util.Set<String> excluded = context
+            .getSharedPreferences(context.getPackageName() + "_preferences", Context.MODE_PRIVATE)
+            .getStringSet("call_recording_excluded_numbers", java.util.Collections.emptySet());
+        String dialable = android.telephony.PhoneNumberUtils.stripSeparators(call.getNumber());
+        if (excluded != null && dialable != null && excluded.contains(dialable)) {
+          return;
+        }
+      } catch (Throwable ignored) {}
+
+      if (recorder.isRecording()) return;
+
+      if (context.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
+          != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        return;
+      }
+
+      recorder.startRecording(call.getNumber(), call.getCreationTimeMillis());
+    } catch (Throwable t) {
+    }
+  }
+
+  private void handleRecordingBubble(DialerCall call) {
+    try {
+      Context ctx = context;
+      if (ctx == null) return;
+      boolean enabled = ctx.getSharedPreferences(ctx.getPackageName() + "_preferences", Context.MODE_PRIVATE)
+              .getBoolean(ctx.getString(com.android.dialer.R.string.call_recording_bubble_key), true);
+      if (!enabled) {
+        com.android.dialer.callrecord.impl.CallRecordOverlayService.stop(ctx);
+        return;
+      }
+      if (call != null && call.getState() == DialerCallState.ACTIVE) {
+        com.android.dialer.callrecord.impl.CallRecordOverlayService.start(ctx);
+      } else {
+        com.android.dialer.callrecord.impl.CallRecordOverlayService.stop(ctx);
+      }
+    } catch (Throwable t) {
+    }
+  }
 }

@@ -38,14 +38,17 @@ import com.android.incallui.bindings.InCallUiBindingsFactory;
 import com.android.incallui.bindings.InCallUiBindingsStub;
 import com.android.incallui.bindings.PhoneNumberService;
 
-/**
- * The application class for the AOSP Dialer. This is a version of the Dialer app that has no
- * dependency on Google Play Services.
- */
 public class AospDialerApplication extends DialerApplication implements
     PhoneNumberCacheBindingsFactory, PhoneDirectoryExtenderFactory, InCallUiBindingsFactory {
 
-  /** Returns a new instance of the root component for the AOSP Dialer. */
+  @Override
+  public void onCreate() {
+    super.onCreate();
+    try {
+      com.google.android.material.color.DynamicColors.applyToActivitiesIfAvailable(this);
+    } catch (Throwable ignored) {}
+  }
+
   @Override
   @NonNull
   protected Object buildRootComponent() {
