@@ -497,6 +497,16 @@ interface ButtonController {
         button.setContentDescription(res.getText(
             isChecked ? R.string.onscreenStopCallRecordText : R.string.onscreenCallRecordText));
         button.setShouldShowMoreIndicator(false);
+        // Apply dynamic color tint when available
+        try {
+          int color = com.google.android.material.color.DynamicColors.getColor(button.getContext(), com.google.android.material.R.attr.colorPrimary);
+          try {
+            button.setIconTint(color);
+          } catch (Throwable ignored) {}
+          try {
+            button.setLabelTint(color);
+          } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {}
       }
     }
 

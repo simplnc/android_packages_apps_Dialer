@@ -139,7 +139,7 @@ public class CallRecordOverlayService extends Service {
         bubble.setImageResource(R.drawable.quantum_ic_record_white_36);
         bubble.setContentDescription(getString(R.string.onscreenCallRecordText));
         bubble.setBackgroundResource(R.drawable.btn_default_material);
-        int size = getResources().getDimensionPixelSize(R.dimen.fab_min_touch_target);
+        int size = (int) (56 * getResources().getDisplayMetrics().density);
 
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 size, size,

@@ -46,6 +46,18 @@
     <string name="call_recording_beep_title">Play safety beep while recording</string>
     <string name="auto_record_calls_on_sim_title">Auto record on %1$s</string>
 
+    <string name="recording_consent_title">Confirm call recording</string>
+    <string name="recording_consent_message">Call recording may be subject to laws and regulations in your region. You are responsible for obtaining consent as required.
+
+- Enabling auto-record will start recording calls automatically.
+- You can exclude specific contacts in Settings.</string>
+    <string name="got_it">Got it</string>
+
+    <string name="manage_recording_exclusions_title">Manage excluded contacts</string>
+    <string name="manage_recording_exclusions_summary">Excluded: %1$d</string>
+    <string name="clear_recording_exclusions_title">Clear excluded contacts</string>
+    <string name="clear_recording_exclusions_confirm">Remove all excluded contacts?</string>
+
     <string name="call_via">Call via</string>
     <string name="call_via_dialog_title">Call via…</string>
 

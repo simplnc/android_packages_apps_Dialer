@@ -160,6 +160,8 @@ public class SoundSettingsFragment extends PreferenceFragmentCompat
     } else {
       injectPerSimRecordingPreferences();
       injectSafetyBeepPreference();
+      addConsentHandlers();
+      addExclusionManagementShortcut();
     }
     notificationManager = context.getSystemService(NotificationManager.class);
   }
@@ -272,5 +274,84 @@ public class SoundSettingsFragment extends PreferenceFragmentCompat
             (CarrierConfigManager) getActivity().getSystemService(Context.CARRIER_CONFIG_SERVICE);
     return carrierConfig.getConfig().getBoolean(
             CarrierConfigManager.KEY_HIDE_CARRIER_NETWORK_SETTINGS_BOOL);
+  }
+
+  private void addConsentHandlers() {
+    // Global auto-record toggle consent
+    SwitchPreferenceCompat global = findPreference(getString(R.string.call_recording_auto_key));
+    if (global != null) {
+      global.setOnPreferenceChangeListener((pref, newValue) -> {
+        if ((Boolean) newValue && !wasConsentShown()) {
+          showConsentDialog(() -> {
+            markConsentShown();
+            global.setChecked(true);
+          });
+          return false;
+        }
+        return true;
+      });
+    }
+    // Per-SIM consent
+    SubscriptionManager sm = getContext().getSystemService(SubscriptionManager.class);
+    List<SubscriptionInfo> infos = sm != null ? sm.getActiveSubscriptionInfoList() : null;
+    if (infos != null) {
+      for (SubscriptionInfo info : infos) {
+        SwitchPreferenceCompat perSim = findPreference(perSimKey(info.getSubscriptionId()));
+        if (perSim != null) {
+          perSim.setOnPreferenceChangeListener((pref, newValue) -> {
+            if ((Boolean) newValue && !wasConsentShown()) {
+              showConsentDialog(() -> {
+                markConsentShown();
+                perSim.setChecked(true);
+              });
+              return false;
+            }
+            return true;
+          });
+        }
+      }
+    }
+  }
+
+  private void addExclusionManagementShortcut() {
+    PreferenceCategory cat = findPreference(getString(R.string.call_recording_category_key));
+    if (cat == null) return;
+    Preference manage = new Preference(getContext());
+    manage.setTitle(R.string.manage_recording_exclusions_title);
+    manage.setSummary(getString(R.string.manage_recording_exclusions_summary, getExcludedCount()));
+    manage.setOnPreferenceClickListener(p -> {
+      // Placeholder: launch a future activity/fragment to manage exclusions
+      Toast.makeText(getContext(), "Exclusion manager coming soon", Toast.LENGTH_SHORT).show();
+      return true;
+    });
+    cat.addPreference(manage);
+  }
+
+  private boolean wasConsentShown() {
+    return getContext().getSharedPreferences(getContext().getPackageName() + "_preferences", Context.MODE_PRIVATE)
+            .getBoolean("call_recording_consent_shown", false);
+  }
+
+  private void markConsentShown() {
+    getContext().getSharedPreferences(getContext().getPackageName() + "_preferences", Context.MODE_PRIVATE)
+            .edit().putBoolean("call_recording_consent_shown", true).apply();
+  }
+
+  private void showConsentDialog(Runnable onAccept) {
+    new AlertDialog.Builder(getContext())
+            .setTitle(R.string.recording_consent_title)
+            .setMessage(R.string.recording_consent_message)
+            .setPositiveButton(R.string.got_it, (d, w) -> {
+              d.dismiss();
+              onAccept.run();
+            })
+            .setNegativeButton(android.R.string.cancel, (d, w) -> d.dismiss())
+            .show();
+  }
+
+  private int getExcludedCount() {
+    // Placeholder: store count under shared prefs key until manager is implemented
+    return getContext().getSharedPreferences(getContext().getPackageName() + "_preferences", Context.MODE_PRIVATE)
+            .getInt("call_recording_excluded_count", 0);
   }
 }
