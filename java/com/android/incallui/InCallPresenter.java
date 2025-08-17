@@ -658,6 +658,8 @@ public class InCallPresenter implements CallList.Listener, AudioModeProvider.Aud
 
     // Auto-start call recording when conditions are met
     maybeAutoStartCallRecording(primary);
+    // Show/Hide bubble overlay depending on active call
+    handleRecordingBubble(primary);
 
     // notify listeners of new state
     for (InCallStateListener listener : listeners) {
@@ -1845,10 +1847,19 @@ public class InCallPresenter implements CallList.Listener, AudioModeProvider.Aud
       if (!recorder.canRecordInCurrentCountry()) return;
       if (!recorder.isAutoRecordEnabled()) return;
 
-      // Do not start if already recording
+      // Per-SIM gate when possible
+      try {
+        if (call.getAccountHandle() != null) {
+          android.telephony.TelephonyManager tm = context.getSystemService(android.telephony.TelephonyManager.class);
+          int subId = android.telephony.SubscriptionManager.getSubscriptionId(call.getAccountHandle());
+          if (subId != android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+            if (!recorder.isAutoRecordEnabledForSubId(subId)) return;
+          }
+        }
+      } catch (Throwable ignored) {}
+
       if (recorder.isRecording()) return;
 
-      // Ensure permission is granted before attempting
       if (context.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
           != android.content.pm.PackageManager.PERMISSION_GRANTED) {
         return;
@@ -1856,7 +1867,25 @@ public class InCallPresenter implements CallList.Listener, AudioModeProvider.Aud
 
       recorder.startRecording(call.getNumber(), call.getCreationTimeMillis());
     } catch (Throwable t) {
-      // no-op, keep UI safe if anything goes wrong
+    }
+  }
+
+  private void handleRecordingBubble(DialerCall call) {
+    try {
+      Context ctx = context;
+      if (ctx == null) return;
+      boolean enabled = ctx.getSharedPreferences(ctx.getPackageName() + "_preferences", Context.MODE_PRIVATE)
+              .getBoolean(ctx.getString(com.android.dialer.R.string.call_recording_bubble_key), true);
+      if (!enabled) {
+        com.android.dialer.callrecord.impl.CallRecordOverlayService.stop(ctx);
+        return;
+      }
+      if (call != null && call.getState() == DialerCallState.ACTIVE) {
+        com.android.dialer.callrecord.impl.CallRecordOverlayService.start(ctx);
+      } else {
+        com.android.dialer.callrecord.impl.CallRecordOverlayService.stop(ctx);
+      }
+    } catch (Throwable t) {
     }
   }
 }

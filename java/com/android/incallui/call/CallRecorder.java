@@ -22,6 +22,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.XmlResourceParser;
+import android.media.ToneGenerator;
+import android.media.AudioManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -140,6 +142,7 @@ public class CallRecorder implements CallList.Listener {
           l.onStartRecording();
         }
         updateRecordingProgressTask.run();
+        maybeStartSafetyBeep();
         return true;
       } else {
         Toast.makeText(context, R.string.call_recording_failed_message, Toast.LENGTH_SHORT)
@@ -191,9 +194,6 @@ public class CallRecorder implements CallList.Listener {
               dataStore.close();
             }).start();
           } else {
-            // Data store is an index by number so that we can link recordings in the
-            // call detail page.  If phone number is not available (conference call or
-            // unknown number) then just display a toast.
             String msg = context.getResources().getString(
                 R.string.call_recording_file_location, recording.fileName);
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
@@ -217,10 +217,57 @@ public class CallRecorder implements CallList.Listener {
       String key = context.getString(R.string.call_recording_auto_key);
       return context
           .getSharedPreferences(context.getPackageName() + "_preferences", Context.MODE_PRIVATE)
-          .getBoolean(key, false);
+          .getBoolean(key, true);
     } catch (Throwable t) {
       return false;
     }
+  }
+
+  /** Returns true if auto-record is enabled for the given subscription. */
+  public boolean isAutoRecordEnabledForSubId(int subId) {
+    if (context == null) return false;
+    try {
+      String key = "call_recording_auto_sim_" + subId;
+      return context
+          .getSharedPreferences(context.getPackageName() + "_preferences", Context.MODE_PRIVATE)
+          .getBoolean(key, true);
+    } catch (Throwable t) {
+      return false;
+    }
+  }
+
+  private boolean isSafetyBeepEnabled() {
+    try {
+      return context
+          .getSharedPreferences(context.getPackageName() + "_preferences", Context.MODE_PRIVATE)
+          .getBoolean(context.getString(R.string.call_recording_beep_key), false);
+    } catch (Throwable t) {
+      return false;
+    }
+  }
+
+  private void maybeStartSafetyBeep() {
+    if (!isSafetyBeepEnabled()) return;
+    // Play a short periodic beep via the system tone generator (DTMF tone) at low volume.
+    final ToneGenerator[] tg = new ToneGenerator[1];
+    try {
+      tg[0] = new ToneGenerator(AudioManager.STREAM_VOICE_CALL, 40);
+    } catch (Throwable t) {
+      return;
+    }
+    handler.post(new Runnable() {
+      @Override
+      public void run() {
+        if (!isRecording()) {
+          if (tg[0] != null) tg[0].release();
+          return;
+        }
+        try {
+          tg[0].startTone(ToneGenerator.TONE_PROP_BEEP, 150);
+        } catch (Throwable ignored) {}
+        handler.postDelayed(this, 15000L);
+      }
+    });
   }
 
   //
@@ -228,23 +275,18 @@ public class CallRecorder implements CallList.Listener {
   //
   @Override
   public void onIncomingCall(DialerCall call) {
-    // do nothing
   }
 
   @Override
   public void onCallListChange(final CallList callList) {
     if (!initialized && callList.getActiveCall() != null) {
-      // we'll come here if this is the first active call
       initialize();
     } else {
-      // we can come down this branch to resume a call that was on hold
       CallRecording active = getActiveRecording();
       if (active != null) {
         DialerCall call =
             callList.getCallWithStateAndNumber(DialerCallState.ONHOLD, active.phoneNumber);
         if (call != null) {
-          // The call associated with the active recording has been placed
-          // on hold, so stop the recording.
           finishRecording();
         }
       }
@@ -255,11 +297,8 @@ public class CallRecorder implements CallList.Listener {
   public void onDisconnect(final DialerCall call) {
     CallRecording active = getActiveRecording();
     if (active != null && TextUtils.equals(call.getNumber(), active.phoneNumber)) {
-      // finish the current recording if the call gets disconnected
       finishRecording();
     }
-
-    // tear down the service if there are no more active calls
     if (CallList.getInstance().getActiveCall() == null) {
       uninitialize();
     }
@@ -280,7 +319,6 @@ public class CallRecorder implements CallList.Listener {
   @Override
   public void onInternationalCallOnWifi(DialerCall call) {}
 
-  // allow clients to listen for recording progress updates
   public interface RecordingProgressListener {
     void onStartRecording();
     void onStopRecording();
@@ -314,17 +352,13 @@ public class CallRecorder implements CallList.Listener {
   private void loadAllowedStates() {
     XmlResourceParser parser = context.getResources().getXml(R.xml.call_record_states);
     try {
-        // Consume all START_DOCUMENT which can appear more than once.
         while (parser.next() == XmlPullParser.START_DOCUMENT) {}
-
         parser.require(XmlPullParser.START_TAG, null, "call-record-allowed-flags");
-
         while (parser.next() != XmlPullParser.END_DOCUMENT) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
             parser.require(XmlPullParser.START_TAG, null, "country");
-
             String iso = parser.getAttributeValue(null, "iso");
             String allowed = parser.getAttributeValue(null, "allowed");
             if (iso != null && ("true".equals(allowed) || "false".equals(allowed))) {

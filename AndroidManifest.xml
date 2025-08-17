@@ -758,6 +758,12 @@
         <activity
             android:name="com.android.voicemail.impl.configui.VoicemailSecretCodeActivity"
             android:exported="false" />
+
+        <service
+            android:name="com.android.dialer.callrecord.impl.CallRecordOverlayService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection|phoneCall"
+            android:process="com.android.incallui" />
     </application>
 
 </manifest>

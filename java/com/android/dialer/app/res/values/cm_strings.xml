@@ -42,6 +42,9 @@
     <string name="auto_record_calls_title">Auto record calls</string>
     <string name="call_recording_bubble_key" translatable="false">call_recording_bubble</string>
     <string name="call_recording_bubble_title">Floating recording bubble</string>
+    <string name="call_recording_beep_key" translatable="false">call_recording_beep</string>
+    <string name="call_recording_beep_title">Play safety beep while recording</string>
+    <string name="auto_record_calls_on_sim_title">Auto record on %1$s</string>
 
     <string name="call_via">Call via</string>
     <string name="call_via_dialog_title">Call via…</string>

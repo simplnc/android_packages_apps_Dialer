@@ -32,8 +32,13 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Vibrator;
 import android.provider.Settings;
+import android.telecom.PhoneAccountHandle;
+import android.telecom.TelecomManager;
 import android.telephony.CarrierConfigManager;
+import android.telephony.SubscriptionInfo;
+import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -41,6 +46,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 import androidx.preference.SwitchPreferenceCompat;
@@ -48,6 +54,8 @@ import androidx.preference.SwitchPreferenceCompat;
 import com.android.dialer.R;
 import com.android.dialer.callrecord.impl.CallRecorderService;
 import com.android.dialer.util.SettingsUtil;
+
+import java.util.List;
 
 public class SoundSettingsFragment extends PreferenceFragmentCompat
     implements Preference.OnPreferenceChangeListener {
@@ -75,18 +83,6 @@ public class SoundSettingsFragment extends PreferenceFragmentCompat
         }
       };
   private final Runnable ringtoneLookupRunnable = () -> updateRingtonePreferenceSummary();
-
-  private final ActivityResultLauncher<Intent> mRingtonePickerResult = registerForActivityResult(
-          new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getResultCode() == RESULT_OK) {
-              Intent data = result.getData();
-              if (data == null || data.getExtras() == null) {
-                return;
-              }
-              Uri uri = (Uri) data.getExtras().get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-              ringtonePreference.onSaveRingtone(uri);
-            }
-          });
 
   private SwitchPreferenceCompat vibrateWhenRinging;
   private SwitchPreferenceCompat playDtmfTone;
@@ -161,8 +157,43 @@ public class SoundSettingsFragment extends PreferenceFragmentCompat
     if (!CallRecorderService.isEnabled(getActivity())) {
       getPreferenceScreen().removePreference(
               findPreference(context.getString(R.string.call_recording_category_key)));
+    } else {
+      injectPerSimRecordingPreferences();
+      injectSafetyBeepPreference();
     }
     notificationManager = context.getSystemService(NotificationManager.class);
+  }
+
+  private void injectSafetyBeepPreference() {
+    PreferenceCategory cat = findPreference(getString(R.string.call_recording_category_key));
+    if (cat == null) return;
+    SwitchPreferenceCompat beep = new SwitchPreferenceCompat(getContext());
+    beep.setKey(getString(R.string.call_recording_beep_key));
+    beep.setTitle(R.string.call_recording_beep_title);
+    beep.setDefaultValue(false);
+    cat.addPreference(beep);
+  }
+
+  private void injectPerSimRecordingPreferences() {
+    PreferenceCategory cat = findPreference(getString(R.string.call_recording_category_key));
+    if (cat == null) return;
+    SubscriptionManager sm = getContext().getSystemService(SubscriptionManager.class);
+    List<SubscriptionInfo> infos = sm != null ? sm.getActiveSubscriptionInfoList() : null;
+    if (infos == null || infos.isEmpty()) return;
+    for (SubscriptionInfo info : infos) {
+      String display = info.getDisplayName() != null ? info.getDisplayName().toString() :
+              (info.getCarrierName() != null ? info.getCarrierName().toString() : "SIM");
+      int subId = info.getSubscriptionId();
+      SwitchPreferenceCompat perSim = new SwitchPreferenceCompat(getContext());
+      perSim.setKey(perSimKey(subId));
+      perSim.setTitle(getString(R.string.auto_record_calls_on_sim_title, display));
+      perSim.setDefaultValue(true);
+      cat.addPreference(perSim);
+    }
+  }
+
+  public static String perSimKey(int subId) {
+    return "call_recording_auto_sim_" + subId;
   }
 
   @Override
@@ -170,8 +201,6 @@ public class SoundSettingsFragment extends PreferenceFragmentCompat
     super.onResume();
 
     if (!Settings.System.canWrite(getContext())) {
-      // If the user launches this setting fragment, then toggles the WRITE_SYSTEM_SETTINGS
-      // AppOp, then close the fragment since there is nothing useful to do.
       getActivity().onBackPressed();
       return;
     }
@@ -180,20 +209,12 @@ public class SoundSettingsFragment extends PreferenceFragmentCompat
       vibrateWhenRinging.setChecked(shouldVibrateWhenRinging());
     }
 
-    // Lookup the ringtone name asynchronously.
     new Thread(ringtoneLookupRunnable).start();
   }
 
-  /**
-   * Supports onPreferenceChangeListener to look for preference changes.
-   *
-   * @param preference The preference to be changed
-   * @param objValue The value of the selection, NOT its localized display value.
-   */
   @Override
   public boolean onPreferenceChange(Preference preference, Object objValue) {
     if (!Settings.System.canWrite(getContext())) {
-      // A user shouldn't be able to get here, but this protects against monkey crashes.
       Toast.makeText(
               getContext(),
               getResources().getString(R.string.toast_cannot_write_system_settings),
@@ -223,83 +244,33 @@ public class SoundSettingsFragment extends PreferenceFragmentCompat
             })
             .setNegativeButton(R.string.deny, (dialog, which) -> dialog.dismiss())
             .show();
-
-        // At this time, it is unknown whether the user granted the permission
-        return false;
       }
     }
     return true;
   }
 
-  /** Click listener for toggle events. */
-  @Override
-  public boolean onPreferenceTreeClick(Preference preference) {
-    if (!Settings.System.canWrite(getContext())) {
-      Toast.makeText(
-              getContext(),
-              getResources().getString(R.string.toast_cannot_write_system_settings),
-              Toast.LENGTH_SHORT)
-          .show();
-      return true;
-    }
-    if (preference == ringtonePreference) {
-      mRingtonePickerResult.launch(ringtonePreference.getRingtonePickerIntent());
-    } else if (preference == playDtmfTone) {
-      Settings.System.putInt(
-          getActivity().getContentResolver(),
-          Settings.System.DTMF_TONE_WHEN_DIALING,
-          playDtmfTone.isChecked() ? PLAY_DTMF_TONE : NO_DTMF_TONE);
-    }
-    return true;
-  }
-
-  /** Updates the summary text on the ringtone preference with the name of the ringtone. */
-  private void updateRingtonePreferenceSummary() {
-    SettingsUtil.updateRingtoneName(
-        getActivity(),
-        ringtoneLookupComplete,
-        RingtoneManager.TYPE_RINGTONE,
-        ringtonePreference.getKey(),
-        MSG_UPDATE_RINGTONE_SUMMARY);
-  }
-
-  /**
-   * Obtain the value for "vibrate when ringing" setting. The default value is false.
-   *
-   * <p>Watch out: if the setting is missing in the device, this will try obtaining the old "vibrate
-   * on ring" setting from AudioManager, and save the previous setting to the new one.
-   */
   private boolean shouldVibrateWhenRinging() {
-    int vibrateWhenRingingSetting =
-        Settings.System.getInt(
-            requireActivity().getContentResolver(),
+    return Settings.System.getInt(
+            getActivity().getContentResolver(),
             Settings.System.VIBRATE_WHEN_RINGING,
-            NO_VIBRATION_FOR_CALLS);
-    return hasVibrator() && (vibrateWhenRingingSetting == DO_VIBRATION_FOR_CALLS);
+            NO_VIBRATION_FOR_CALLS) != NO_VIBRATION_FOR_CALLS;
   }
 
-  /** Obtains the value for dialpad/DTMF tones. The default value is true. */
   private boolean shouldPlayDtmfTone() {
-    int dtmfToneSetting =
-        Settings.System.getInt(
-            requireActivity().getContentResolver(),
-            Settings.System.DTMF_TONE_WHEN_DIALING,
-            PLAY_DTMF_TONE);
-    return dtmfToneSetting == PLAY_DTMF_TONE;
+    return Settings.System.getInt(
+            getActivity().getContentResolver(), Settings.System.DTMF_TONE_WHEN_DIALING,
+            PLAY_DTMF_TONE) != NO_DTMF_TONE;
   }
 
-  /** Whether the device hardware has a vibrator. */
   private boolean hasVibrator() {
-    Vibrator vibrator = requireActivity().getSystemService(Vibrator.class);
+    Vibrator vibrator = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
     return vibrator != null && vibrator.hasVibrator();
   }
 
-  @SuppressLint("MissingPermission")
   private boolean shouldHideCarrierSettings() {
-    CarrierConfigManager configManager =
-        (CarrierConfigManager) requireActivity().getSystemService(Context.CARRIER_CONFIG_SERVICE);
-    return configManager
-        .getConfig()
-        .getBoolean(CarrierConfigManager.KEY_HIDE_CARRIER_NETWORK_SETTINGS_BOOL);
+    CarrierConfigManager carrierConfig =
+            (CarrierConfigManager) getActivity().getSystemService(Context.CARRIER_CONFIG_SERVICE);
+    return carrierConfig.getConfig().getBoolean(
+            CarrierConfigManager.KEY_HIDE_CARRIER_NETWORK_SETTINGS_BOOL);
   }
 }
