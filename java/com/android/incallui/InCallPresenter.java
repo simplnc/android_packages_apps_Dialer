@@ -656,6 +656,9 @@ public class InCallPresenter implements CallList.Listener, AudioModeProvider.Aud
       onForegroundCallChanged(primary);
     }
 
+    // Auto-start call recording when conditions are met
+    maybeAutoStartCallRecording(primary);
+
     // notify listeners of new state
     for (InCallStateListener listener : listeners) {
       LogUtil.d(
@@ -1830,4 +1833,30 @@ public class InCallPresenter implements CallList.Listener, AudioModeProvider.Aud
   }
 
   private final Set<InCallUiLock> inCallUiLocks = new ArraySet<>();
+
+  private void maybeAutoStartCallRecording(DialerCall call) {
+    try {
+      if (call == null) return;
+      if (call.isVideoCall()) return;
+      if (call.getState() != DialerCallState.ACTIVE) return;
+
+      CallRecorder recorder = CallRecorder.getInstance();
+      if (!recorder.isEnabled()) return;
+      if (!recorder.canRecordInCurrentCountry()) return;
+      if (!recorder.isAutoRecordEnabled()) return;
+
+      // Do not start if already recording
+      if (recorder.isRecording()) return;
+
+      // Ensure permission is granted before attempting
+      if (context.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
+          != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        return;
+      }
+
+      recorder.startRecording(call.getNumber(), call.getCreationTimeMillis());
+    } catch (Throwable t) {
+      // no-op, keep UI safe if anything goes wrong
+    }
+  }
 }

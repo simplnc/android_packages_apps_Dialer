@@ -210,6 +210,19 @@ public class CallRecorder implements CallList.Listener {
     handler.removeCallbacks(updateRecordingProgressTask);
   }
 
+  /** Returns true if the user enabled auto record in settings. */
+  public boolean isAutoRecordEnabled() {
+    if (context == null) return false;
+    try {
+      String key = context.getString(R.string.call_recording_auto_key);
+      return context
+          .getSharedPreferences(context.getPackageName() + "_preferences", Context.MODE_PRIVATE)
+          .getBoolean(key, false);
+    } catch (Throwable t) {
+      return false;
+    }
+  }
+
   //
   // Call list listener methods.
   //
