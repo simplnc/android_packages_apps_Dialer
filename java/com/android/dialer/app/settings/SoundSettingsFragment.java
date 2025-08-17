@@ -320,8 +320,7 @@ public class SoundSettingsFragment extends PreferenceFragmentCompat
     manage.setTitle(R.string.manage_recording_exclusions_title);
     manage.setSummary(getString(R.string.manage_recording_exclusions_summary, getExcludedCount()));
     manage.setOnPreferenceClickListener(p -> {
-      // Placeholder: launch a future activity/fragment to manage exclusions
-      Toast.makeText(getContext(), "Exclusion manager coming soon", Toast.LENGTH_SHORT).show();
+      startActivity(new Intent(getContext(), RecordingExclusionsActivity.class));
       return true;
     });
     cat.addPreference(manage);

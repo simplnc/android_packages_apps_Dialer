@@ -1858,6 +1858,17 @@ public class InCallPresenter implements CallList.Listener, AudioModeProvider.Aud
         }
       } catch (Throwable ignored) {}
 
+      // Per-contact exclusion gate
+      try {
+        java.util.Set<String> excluded = context
+            .getSharedPreferences(context.getPackageName() + "_preferences", Context.MODE_PRIVATE)
+            .getStringSet("call_recording_excluded_numbers", java.util.Collections.emptySet());
+        String dialable = android.telephony.PhoneNumberUtils.stripSeparators(call.getNumber());
+        if (excluded != null && dialable != null && excluded.contains(dialable)) {
+          return;
+        }
+      } catch (Throwable ignored) {}
+
       if (recorder.isRecording()) return;
 
       if (context.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)

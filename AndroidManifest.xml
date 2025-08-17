@@ -170,6 +170,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.android.dialer.app.settings.RecordingExclusionsActivity"
+            android:exported="false"
+            android:label="@string/manage_recording_exclusions_title"
+            android:theme="@style/SettingsStyle" />
+
         <receiver
             android:name="com.android.dialer.app.calllog.CallLogReceiver"
             android:exported="true">
