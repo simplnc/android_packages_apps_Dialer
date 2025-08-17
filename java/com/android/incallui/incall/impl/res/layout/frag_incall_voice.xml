@@ -29,61 +29,72 @@
       android:clipToPadding="false"
       android:fitsSystemWindows="true">
 
-    <LinearLayout
+    <!-- Contact Information Card -->
+    <com.google.android.material.card.MaterialCardView
         android:id="@id/incall_contact_grid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:strokeColor="?attr/colorOutline"
+        app:strokeWidth="1dp">
 
-      <ImageView
-          android:id="@id/contactgrid_avatar"
-          android:layout_width="@dimen/incall_avatar_size"
-          android:layout_height="@dimen/incall_avatar_size"
-          android:layout_marginBottom="8dp"
-          android:elevation="2dp"/>
-
-      <include
-          layout="@layout/incall_contactgrid_top_row"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/incall_window_margin_horizontal"
-          android:layout_marginEnd="@dimen/incall_window_margin_horizontal"/>
-
-      <!-- We have to keep deprecated singleLine to allow long text being truncated with ellipses.
-                 a bug -->
-      <com.android.incallui.autoresizetext.AutoResizeTextView
-          android:id="@id/contactgrid_contact_name"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginBottom="4dp"
-          android:layout_marginStart="@dimen/incall_window_margin_horizontal"
-          android:layout_marginEnd="@dimen/incall_window_margin_horizontal"
-          android:singleLine="true"
-          android:textAppearance="@style/Dialer.Incall.TextAppearance.Large"
-          app:autoResizeText_minTextSize="28sp"
-          tools:ignore="Deprecated"
-          tools:text="Jake Peralta"/>
-
-      <include
-          layout="@layout/incall_contactgrid_bottom_row"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/incall_window_margin_horizontal"
-          android:layout_marginEnd="@dimen/incall_window_margin_horizontal"/>
-
-      <FrameLayout
-          android:id="@+id/incall_location_holder"
+      <LinearLayout
           android:layout_width="match_parent"
-          android:layout_height="match_parent"/>
+          android:layout_height="wrap_content"
+          android:gravity="center_horizontal"
+          android:orientation="vertical"
+          android:padding="24dp">
 
-      <include
-          layout="@layout/device_number_row"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"/>
-    </LinearLayout>
+        <ImageView
+            android:id="@id/contactgrid_avatar"
+            android:layout_width="@dimen/incall_avatar_size"
+            android:layout_height="@dimen/incall_avatar_size"
+            android:layout_marginBottom="16dp"
+            android:elevation="4dp"
+            app:tint="?attr/colorOnSurface"/>
 
+        <include
+            layout="@layout/incall_contactgrid_top_row"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Contact Name -->
+        <com.android.incallui.autoresizetext.AutoResizeTextView
+            android:id="@id/contactgrid_contact_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:singleLine="true"
+            android:textAppearance="@style/Dialer.Incall.TextAppearance.Large"
+            app:autoResizeText_minTextSize="28sp"
+            tools:ignore="Deprecated"
+            tools:text="Jake Peralta"/>
+
+        <include
+            layout="@layout/incall_contactgrid_bottom_row"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"/>
+
+        <FrameLayout
+            android:id="@+id/incall_location_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <include
+            layout="@layout/device_number_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+      </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Call Controls Pager -->
     <com.android.dialer.widget.LockableViewPager
         android:id="@+id/incall_pager"
         android:layout_width="match_parent"
@@ -92,6 +103,7 @@
         android:layout_below="@+id/incall_contact_grid"
         android:layout_centerHorizontal="true"/>
 
+    <!-- Paginator -->
     <com.android.incallui.incall.impl.InCallPaginator
         android:id="@+id/incall_paginator"
         android:layout_width="@dimen/paginator_width"
@@ -100,6 +112,7 @@
         android:layout_centerHorizontal="true"
         android:visibility="gone"/>
 
+    <!-- Dialpad Container -->
     <FrameLayout
         android:id="@+id/incall_dialpad_container"
         style="@style/DialpadContainer"
@@ -110,19 +123,36 @@
         android:clipToPadding="false"
         tools:background="@android:color/white"
         tools:visibility="gone"/>
-    <ImageButton
-        android:id="@+id/incall_end_call"
-        style="@style/Incall.Button.End"
-        android:layout_marginTop="36dp"
-        android:layout_marginBottom="36dp"
+
+    <!-- End Call Button -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:contentDescription="@string/incall_content_description_end_call"/>
+        android:layout_marginBottom="32dp"
+        app:cardElevation="8dp"
+        app:cardCornerRadius="28dp"
+        app:cardBackgroundColor="?attr/colorErrorContainer">
+
+      <ImageButton
+          android:id="@+id/incall_end_call"
+          style="@style/Incall.Button.End"
+          android:layout_width="56dp"
+          android:layout_height="56dp"
+          android:padding="16dp"
+          android:background="?attr/selectableItemBackgroundBorderless"
+          android:contentDescription="@string/incall_content_description_end_call"
+          app:tint="?attr/colorOnErrorContainer"/>
+
+    </com.google.android.material.card.MaterialCardView>
   </RelativeLayout>
 
+  <!-- Hold Banner -->
   <FrameLayout
       android:id="@id/incall_on_hold_banner"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_gravity="top"/>
+
 </FrameLayout>

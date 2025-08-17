@@ -53,6 +53,7 @@ import androidx.preference.SwitchPreferenceCompat;
 
 import com.android.dialer.R;
 import com.android.dialer.callrecord.impl.CallRecorderService;
+import com.android.dialer.callrecord.CallRecordingReminderService;
 import com.android.dialer.util.SettingsUtil;
 
 import java.util.List;
@@ -285,8 +286,13 @@ public class SoundSettingsFragment extends PreferenceFragmentCompat
           showConsentDialog(() -> {
             markConsentShown();
             global.setChecked(true);
+            // Schedule reminder when auto-record is enabled
+            CallRecordingReminderService.scheduleReminder(getContext());
           });
           return false;
+        } else if (!(Boolean) newValue) {
+          // Cancel reminder when auto-record is disabled
+          CallRecordingReminderService.cancelReminder(getContext());
         }
         return true;
       });
@@ -303,8 +309,27 @@ public class SoundSettingsFragment extends PreferenceFragmentCompat
               showConsentDialog(() -> {
                 markConsentShown();
                 perSim.setChecked(true);
+                // Schedule reminder when per-SIM auto-record is enabled
+                CallRecordingReminderService.scheduleReminder(getContext());
               });
               return false;
+            } else if (!(Boolean) newValue) {
+              // Check if any other SIM has auto-record enabled
+              boolean anyEnabled = false;
+              for (SubscriptionInfo otherInfo : infos) {
+                if (otherInfo.getSubscriptionId() != info.getSubscriptionId()) {
+                  String otherKey = perSimKey(otherInfo.getSubscriptionId());
+                  SwitchPreferenceCompat otherPref = findPreference(otherKey);
+                  if (otherPref != null && otherPref.isChecked()) {
+                    anyEnabled = true;
+                    break;
+                  }
+                }
+              }
+              if (!anyEnabled) {
+                // Cancel reminder if no SIM has auto-record enabled
+                CallRecordingReminderService.cancelReminder(getContext());
+              }
             }
             return true;
           });

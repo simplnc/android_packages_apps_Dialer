@@ -516,4 +516,44 @@
 
   <!-- Label under the name of a spam number in the call log. [CHAR LIMIT=15] -->
   <string name="spam_number_call_log_label">Spam</string>
+
+  <!-- Call Recording Exclusions UI strings -->
+  <string name="search_exclusions_title">Search Exclusions</string>
+  <string name="search_exclusions_hint">Search by name or number</string>
+  <string name="add_contact_to_exclusions">Add Contact</string>
+  <string name="edit_exclusion_title">Edit Exclusion</string>
+  <string name="edit_contact_name_label">Contact Name</string>
+  <string name="edit_contact_number_label">Phone Number</string>
+  <string name="contact_name_hint">Enter contact name</string>
+  <string name="contact_number_hint">Enter phone number</string>
+  <string name="remove_exclusion_title">Remove Exclusion</string>
+  <string name="remove_exclusion_message">Remove %s from exclusions?</string>
+  <string name="clear_all_exclusions_title">Clear All Exclusions</string>
+  <string name="clear_all_exclusions_message">Remove all contacts from exclusions?</string>
+  <string name="contact_added_to_exclusions">Contact added to exclusions</string>
+  <string name="contact_already_excluded">Contact already excluded</string>
+  <string name="contact_removed_from_exclusions">Contact removed from exclusions</string>
+  <string name="all_exclusions_cleared">All exclusions cleared</string>
+  <string name="exclusion_updated">Exclusion updated</string>
+  <string name="number_required">Phone number is required</string>
+  <string name="unknown_contact">Unknown Contact</string>
+
+  <!-- Auto-record Reminder Notification strings -->
+  <string name="auto_record_reminder_title">Auto-record Reminder</string>
+  <string name="auto_record_reminder_text">Auto-record has been enabled for a while</string>
+  <string name="auto_record_reminder_long_text">Auto-record has been enabled for an extended period. Consider reviewing your settings to ensure this feature still meets your needs.</string>
+  <string name="auto_record_reminder_settings">Settings</string>
+  <string name="auto_record_reminder_dismiss">Dismiss</string>
+  <string name="auto_record_reminder_channel_name">Call Recording Reminders</string>
+  <string name="auto_record_reminder_channel_description">Reminders about auto-record settings</string>
+
+  <!-- Call Recording Management strings -->
+  <string name="manage_recording_exclusions_title">Manage Excluded Contacts</string>
+  <string name="manage_recording_exclusions_summary">Excluded: %1$d</string>
+  <string name="recording_consent_title">Confirm Call Recording</string>
+  <string name="recording_consent_message">By enabling call recording, you acknowledge that you will comply with all applicable laws regarding call recording in your jurisdiction.</string>
+  <string name="got_it">Got it</string>
+  <string name="call_recording_category_key" translatable="false">call_recording_category</string>
+  <string name="call_recording_auto_key" translatable="false">call_recording_auto</string>
+  <string name="clear_recording_exclusions_title">Clear Excluded Contacts</string>
 </resources>

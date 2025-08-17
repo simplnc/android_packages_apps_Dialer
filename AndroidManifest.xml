@@ -138,6 +138,10 @@
             android:name="com.android.dialer.callrecord.impl.CallRecorderService"
             android:process="com.android.incallui" />
 
+        <service
+            android:name="com.android.dialer.callrecord.CallRecordingReminderService"
+            android:exported="false" />
+
         <activity
             android:name="com.android.contacts.common.dialog.CallSubjectDialog"
             android:exported="true"
