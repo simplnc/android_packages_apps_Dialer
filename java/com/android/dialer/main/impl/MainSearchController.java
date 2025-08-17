@@ -27,7 +27,6 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.Toast;
-import android.telephony.PhoneNumberUtils;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -42,7 +41,6 @@ import com.android.dialer.R;
 import com.android.dialer.app.calllog.CallLogActivity;
 import com.android.dialer.app.settings.DialerSettingsActivity;
 import com.android.dialer.callintent.CallInitiationType;
-import com.android.dialer.callintent.CallIntentBuilder;
 import com.android.dialer.common.LogUtil;
 import com.android.dialer.dialpadview.DialpadFragment;
 import com.android.dialer.dialpadview.DialpadFragment.DialpadListener;
@@ -56,12 +54,10 @@ import com.android.dialer.searchfragment.list.NewSearchFragment.SearchFragmentLi
 import com.android.dialer.smartdial.util.SmartDialNameMatcher;
 import com.android.dialer.util.DialerUtils;
 import com.android.dialer.util.TransactionSafeActivity;
-import com.android.dialer.precall.PreCall;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.List;
 import java.util.Optional;
 
@@ -518,25 +514,7 @@ public class MainSearchController implements SearchBarListener {
       ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
       if (matches.size() > 0) {
         LogUtil.i("MainSearchController.onVoiceResults", "voice search - match found");
-        String top = matches.get(0);
-        // Simple voice-dial fallback: if query starts with "call " or is a dialable number,
-        // place a voice call directly. Otherwise open search with the recognized text.
-        String normalized = top == null ? "" : top.trim();
-        String lower = normalized.toLowerCase(Locale.US);
-        String candidateNumber = null;
-        if (lower.startsWith("call ")) {
-          candidateNumber = lower.replaceFirst("^call\\s+", "").trim();
-        } else {
-          candidateNumber = normalized;
-        }
-        String dialable = PhoneNumberUtils.stripSeparators(candidateNumber);
-        if (!TextUtils.isEmpty(dialable) && PhoneNumberUtils.isGlobalPhoneNumber(dialable)) {
-          PreCall.start(
-              activity,
-              new CallIntentBuilder(dialable, CallInitiationType.Type.VOICE_SEARCH));
-          return;
-        }
-        openSearch(Optional.of(normalized));
+        openSearch(Optional.of(matches.get(0)));
       } else {
         LogUtil.i("MainSearchController.onVoiceResults", "voice search - nothing heard");
       }

@@ -170,12 +170,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="com.android.dialer.app.settings.RecordingExclusionsActivity"
-            android:exported="false"
-            android:label="@string/manage_recording_exclusions_title"
-            android:theme="@style/SettingsStyle" />
-
         <receiver
             android:name="com.android.dialer.app.calllog.CallLogReceiver"
             android:exported="true">
@@ -764,12 +758,6 @@
         <activity
             android:name="com.android.voicemail.impl.configui.VoicemailSecretCodeActivity"
             android:exported="false" />
-
-        <service
-            android:name="com.android.dialer.callrecord.impl.CallRecordOverlayService"
-            android:exported="false"
-            android:foregroundServiceType="mediaProjection|phoneCall"
-            android:process="com.android.incallui" />
     </application>
 
 </manifest>
