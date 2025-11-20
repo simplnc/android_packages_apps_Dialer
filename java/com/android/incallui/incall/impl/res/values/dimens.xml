@@ -20,11 +20,25 @@
   <dimen name="incall_button_elevation">0dp</dimen>
   <dimen name="incall_button_padding">4dp</dimen>
   <dimen name="incall_button_vertical_padding">8dp</dimen>
-  <dimen name="incall_avatar_size">0dp</dimen>
+  <dimen name="incall_avatar_size">112dp</dimen>
   <dimen name="incall_labeled_button_size">48dp</dimen>
   <dimen name="incall_labeled_button_icon_size">36dp</dimen>
   <dimen name="tools_button_height">76dp</dimen>
   <dimen name="incall_window_margin_horizontal">24dp</dimen>
+  <dimen name="incall_contact_card_margin_horizontal">24dp</dimen>
+  <dimen name="incall_contact_card_margin_top">32dp</dimen>
+  <dimen name="incall_contact_card_padding_horizontal">24dp</dimen>
+  <dimen name="incall_contact_card_padding_vertical">20dp</dimen>
+  <dimen name="incall_contact_card_corner_radius">28dp</dimen>
+  <dimen name="incall_contact_card_elevation">8dp</dimen>
+  <dimen name="incall_action_panel_margin_horizontal">32dp</dimen>
+  <dimen name="incall_action_panel_margin_bottom">24dp</dimen>
+  <dimen name="incall_action_panel_padding_horizontal">24dp</dimen>
+  <dimen name="incall_action_panel_padding_vertical">16dp</dimen>
+  <dimen name="incall_action_panel_spacing">12dp</dimen>
+  <dimen name="incall_bottom_panel_corner_radius">28dp</dimen>
+  <dimen name="incall_bottom_panel_elevation">6dp</dimen>
+  <dimen name="incall_pager_margin_top">24dp</dimen>
 
   <bool name="incall_dialpad_allowed">false</bool>
   <integer name="incall_num_rows">0</integer>
