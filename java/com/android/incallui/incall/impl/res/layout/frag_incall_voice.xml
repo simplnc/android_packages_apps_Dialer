@@ -21,6 +21,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+  <ImageView
+      android:id="@+id/incall_background_image"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:contentDescription="@null"
+      android:scaleType="centerCrop"
+      android:src="@drawable/incall_surface_gradient"
+      android:importantForAccessibility="no"/>
+
+  <View
+      android:id="@+id/incall_background_scrim"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@drawable/incall_background_scrim"
+      android:importantForAccessibility="no"/>
+
   <RelativeLayout
       android:id="@+id/incall_ui_container"
       android:layout_width="match_parent"
@@ -33,16 +49,25 @@
         android:id="@id/incall_contact_grid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="@dimen/incall_contact_card_margin_horizontal"
+        android:layout_marginEnd="@dimen/incall_contact_card_margin_horizontal"
+        android:layout_marginTop="@dimen/incall_contact_card_margin_top"
+        android:background="@drawable/incall_contact_card_background"
+        android:elevation="@dimen/incall_contact_card_elevation"
         android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="@dimen/incall_contact_card_padding_horizontal"
+        android:paddingTop="@dimen/incall_contact_card_padding_vertical"
+        android:paddingEnd="@dimen/incall_contact_card_padding_horizontal"
+        android:paddingBottom="@dimen/incall_contact_card_padding_vertical">
 
       <ImageView
           android:id="@id/contactgrid_avatar"
           android:layout_width="@dimen/incall_avatar_size"
           android:layout_height="@dimen/incall_avatar_size"
-          android:layout_marginBottom="8dp"
-          android:elevation="2dp"/>
+          android:layout_marginBottom="12dp"
+          android:elevation="4dp"/>
 
       <include
           layout="@layout/incall_contactgrid_top_row"
@@ -57,7 +82,7 @@
           android:id="@id/contactgrid_contact_name"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_marginBottom="4dp"
+          android:layout_marginBottom="8dp"
           android:layout_marginStart="@dimen/incall_window_margin_horizontal"
           android:layout_marginEnd="@dimen/incall_window_margin_horizontal"
           android:singleLine="true"
@@ -76,7 +101,7 @@
       <FrameLayout
           android:id="@+id/incall_location_holder"
           android:layout_width="match_parent"
-          android:layout_height="match_parent"/>
+          android:layout_height="wrap_content"/>
 
       <include
           layout="@layout/device_number_row"
@@ -88,17 +113,44 @@
         android:id="@+id/incall_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/incall_paginator"
-        android:layout_below="@+id/incall_contact_grid"
-        android:layout_centerHorizontal="true"/>
+        android:layout_below="@id/incall_contact_grid"
+        android:layout_above="@+id/incall_action_panel"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="@dimen/incall_pager_margin_top"/>
 
-    <com.android.incallui.incall.impl.InCallPaginator
-        android:id="@+id/incall_paginator"
-        android:layout_width="@dimen/paginator_width"
-        android:layout_height="@dimen/paginator_height"
-        android:layout_above="@+id/incall_end_call"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"/>
+    <LinearLayout
+        android:id="@+id/incall_action_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/incall_dialpad_container"
+        android:layout_marginStart="@dimen/incall_action_panel_margin_horizontal"
+        android:layout_marginEnd="@dimen/incall_action_panel_margin_horizontal"
+        android:layout_marginBottom="@dimen/incall_action_panel_margin_bottom"
+        android:background="@drawable/incall_bottom_bar_background"
+        android:elevation="@dimen/incall_bottom_panel_elevation"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/incall_action_panel_padding_horizontal"
+        android:paddingTop="@dimen/incall_action_panel_padding_vertical"
+        android:paddingEnd="@dimen/incall_action_panel_padding_horizontal"
+        android:paddingBottom="@dimen/incall_action_panel_padding_vertical">
+
+      <com.android.incallui.incall.impl.InCallPaginator
+          android:id="@+id/incall_paginator"
+          android:layout_width="@dimen/paginator_width"
+          android:layout_height="@dimen/paginator_height"
+          android:layout_marginBottom="@dimen/incall_action_panel_spacing"
+          android:visibility="gone"/>
+
+      <ImageButton
+          android:id="@+id/incall_end_call"
+          style="@style/Incall.Button.End"
+          android:layout_marginTop="@dimen/incall_action_panel_spacing"
+          android:contentDescription="@string/incall_content_description_end_call"/>
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/incall_dialpad_container"
@@ -110,14 +162,6 @@
         android:clipToPadding="false"
         tools:background="@android:color/white"
         tools:visibility="gone"/>
-    <ImageButton
-        android:id="@+id/incall_end_call"
-        style="@style/Incall.Button.End"
-        android:layout_marginTop="36dp"
-        android:layout_marginBottom="36dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:contentDescription="@string/incall_content_description_end_call"/>
   </RelativeLayout>
 
   <FrameLayout
