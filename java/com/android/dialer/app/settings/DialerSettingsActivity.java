@@ -112,14 +112,19 @@ public class DialerSettingsActivity extends BaseActivity implements
   @Override
   public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller,
                                            @NonNull Preference pref) {
-    Fragment fragment = getSupportFragmentManager()
-            .getFragmentFactory()
-            .instantiate(getClassLoader(), pref.getFragment());
-    fragment.setArguments(pref.getExtras());
-    getSupportFragmentManager().beginTransaction()
-            .replace(R.id.content_frame, fragment, "")
-            .addToBackStack(null)
-            .commit();
+    try {
+        Fragment fragment = getSupportFragmentManager()
+                .getFragmentFactory()
+                .instantiate(getClassLoader(), pref.getFragment());
+        fragment.setArguments(pref.getExtras());
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, fragment, "")
+                .addToBackStack(null)
+                .commit();
+    } catch (IllegalStateException e) {
+        LogUtil.e("DialerSettingsActivity.onPreferenceStartFragment", "FragmentManager is already executing transactions", e);
+        // Handle gracefully, perhaps show a toast or defer
+    }
     setTitle(pref.getTitle());
     return true;
   }
