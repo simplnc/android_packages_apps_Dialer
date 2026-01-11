@@ -54,7 +54,15 @@ public class DialerSettingsActivity extends BaseActivity implements
   protected SharedPreferences preferences;
 
   @Override
-  protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.dialer_settings);
+        findPreference("blocked_numbers").setOnPreferenceChangeListener((preference, newValue) -> {
+            // Save blocked numbers to shared preferences
+            getSharedPreferences("dialer_prefs", MODE_PRIVATE).edit()
+                .putString("blocked_numbers", (String) newValue).apply();
+            return true;
+        });
     LogUtil.enterBlock("DialerSettingsActivity.onCreate");
     super.onCreate(savedInstanceState);
     preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
