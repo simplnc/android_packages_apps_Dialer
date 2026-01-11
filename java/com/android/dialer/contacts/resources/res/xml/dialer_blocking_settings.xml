@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/call_blocking_title">
+        <EditTextPreference
+            android:key="blocked_numbers"
+            android:title="Blocked Numbers"
+            android:summary="Enter numbers to block (comma separated)"
+            android:dialogTitle="Block Numbers" />
+    </PreferenceCategory>
+</PreferenceScreen>

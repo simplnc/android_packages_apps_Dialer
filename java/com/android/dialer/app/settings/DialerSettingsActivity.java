@@ -54,7 +54,15 @@ public class DialerSettingsActivity extends BaseActivity implements
   protected SharedPreferences preferences;
 
   @Override
-  protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.dialer_settings);
+        findPreference("blocked_numbers").setOnPreferenceChangeListener((preference, newValue) -> {
+            // Save blocked numbers to shared preferences
+            getSharedPreferences("dialer_prefs", MODE_PRIVATE).edit()
+                .putString("blocked_numbers", (String) newValue).apply();
+            return true;
+        });
     LogUtil.enterBlock("DialerSettingsActivity.onCreate");
     super.onCreate(savedInstanceState);
     preferences = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
@@ -104,14 +112,19 @@ public class DialerSettingsActivity extends BaseActivity implements
   @Override
   public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller,
                                            @NonNull Preference pref) {
-    Fragment fragment = getSupportFragmentManager()
-            .getFragmentFactory()
-            .instantiate(getClassLoader(), pref.getFragment());
-    fragment.setArguments(pref.getExtras());
-    getSupportFragmentManager().beginTransaction()
-            .replace(R.id.content_frame, fragment, "")
-            .addToBackStack(null)
-            .commit();
+    try {
+        Fragment fragment = getSupportFragmentManager()
+                .getFragmentFactory()
+                .instantiate(getClassLoader(), pref.getFragment());
+        fragment.setArguments(pref.getExtras());
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.content_frame, fragment, "")
+                .addToBackStack(null)
+                .commit();
+    } catch (IllegalStateException e) {
+        LogUtil.e("DialerSettingsActivity.onPreferenceStartFragment", "FragmentManager is already executing transactions", e);
+        // Handle gracefully, perhaps show a toast or defer
+    }
     setTitle(pref.getTitle());
     return true;
   }
